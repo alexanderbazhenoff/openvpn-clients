@@ -1,0 +1,23 @@
+---
+
+- name: "send_mail | Sending an e-mail using Gmail SMTP servers"
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: '{{ email_username }}'
+    password: '{{ email_userpassword }}'
+    to: '{{ user_email }}'
+    cc: '{{ admin_email }}'
+    subject: VPN keys and instructions
+    body: "{{ lookup('file', 'message.txt') }}"
+    attach: "{{ role_path }}/files/instructions.txt /tmp/{{ openvpn_user }}-openvpn-keys.zip"
+  delegate_to: localhost
+  become: false
+
+- name: "send_mail | Remove keys from localhost"
+  file:
+    path: "/tmp/{{ openvpn_user }}-openvpn-keys.zip"
+    state: absent
+  delegate_to: localhost
+  become: false
+  when: remove_after_send == true

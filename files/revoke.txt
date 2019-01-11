@@ -1,0 +1,8 @@
+Hi,
+
+User keys and settings was removed from OpenVPN server.
+
+
+---
+Regards,
+Your team.

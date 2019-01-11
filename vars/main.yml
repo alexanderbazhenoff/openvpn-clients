@@ -1,0 +1,39 @@
+---
+
+  # Specify email domain name here (gmail.com or yourdomain.com):
+  email_domain: "gmail.com"
+
+  # Public IP and port for OpenVPN server (using for .ovpn files)
+  openvpn_public_ip: "1.1.1.1"
+  openvpn_port: "1194"
+
+  # Path to OpenVPN directory:
+  openvpn_path: "/etc/openvpn"
+
+  # Path to your easy-rsa directory:
+  easyrsa_path: "/etc/openvpn/easy-rsa"
+
+  # Default task for openvpn-users role:
+  openvpn_task: stats
+
+  # Send all info to email when "true":
+  send_to_email: true
+
+  # Remove cets files from OpenVPN server when "true":
+  remove_certs: true
+
+  # Make .ovpn file for mobile devices when creating all user
+  # certificates (or use only openvpn_make_moble.yml)
+  make_mobile: true
+
+  # Outgoing mail username and password (to send from):
+  email_username: "vpn-bot@gmail.com"
+  email_userpassword: "yourpasswordhere"
+
+  # System administrator email (to send a copy of message):
+  # (you can specify: "email_addr1, email_addr2, email_addr3"
+  # or just single "email_addr")
+  admin_email: "admin1@gmail.com, admin2@yourdomain.com"
+
+  # Removes certificates after sending via email when "true":
+  remove_after_send: true

@@ -1,0 +1,78 @@
+---
+
+  - name: "make_user | Creating OpenVPN user certificates"
+    shell: |
+      cd {{ easyrsa_path }}
+      source {{ easyrsa_path }}/vars && export KEY_EMAIL=\"{{ user_email }}\"
+      ./pkitool {{ openvpn_user }}
+    args:
+      executable: /bin/bash
+    register: command
+    when: openvpn_task is defined and openvpn_task != "resend"
+
+  - name: "make_user | Debug of create cert result"
+    debug:
+      var: command
+    when: openvpn_task is defined and openvpn_task != "resend"
+
+  - name: "make_user | Creating archive with OpenVPN keys"
+    shell: |
+        zip -j /tmp/openvpnkeys.zip {{ easyrsa_path }}/keys/ca.crt
+        zip -j /tmp/openvpnkeys.zip {{ easyrsa_path }}/keys/{{ openvpn_user }}.crt
+        zip -j /tmp/openvpnkeys.zip {{ easyrsa_path }}/keys/{{ openvpn_user }}.key
+    args:
+      executable: /bin/bash
+    register: command
+  - name: "make_user | Creating archive with OpenVPN keys debug"
+    debug:
+      var: command
+
+  - name: "make_user | Create .ovpn file"
+    include: make_mobile.yml
+    when: make_mobile == true
+
+  - name: "Check that the .ovpn file exists"
+    stat:
+      path: "{{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn"
+    register: stat_result
+    when: openvpn_task is defined and openvpn_task == "resend"
+
+  - name: "make_user | Add .ovpn file to archive"
+    shell: |
+        zip -j /tmp/openvpnkeys.zip {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+    args:
+      executable: /bin/bash
+    register: command
+    when: ( make_mobile == true and stat_result.stat.exists == true ) and
+          ( openvpn_task is defined and openvpn_task == "resend" )
+
+  - name: "make_user | Add .ovpn file to archive results debug"
+    debug:
+      var: command
+    when: ( make_mobile == true and stat_result.stat.exists == true ) and
+          ( openvpn_task is defined and openvpn_task == "resend" )
+
+  - name: "make_user | Fetching OpenVPN user keys archive"
+    fetch:
+      src: "/tmp/openvpnkeys.zip"
+      dest: "/tmp/{{ openvpn_user }}-openvpn-keys.zip"
+      flat: yes
+
+  - name: "make_user | Send info to user"
+    include: send_mail.yml
+    when: send_to_email == true
+
+  - name: "make_user | Clean-up temporary archives on VPN server"
+    file:
+      state: absent
+      path: "/tmp/openvpnkeys.zip"
+
+  - name: "make_user | Creating ccd {{ openvpn_user }} file"
+    copy:
+      content: ""
+      dest: "{{ openvpn_path }}/ccd/{{ openvpn_user }}"
+      force: no
+      group: sys
+      owner: root
+      mode: 0644
+    when: openvpn_task is defined and openvpn_task != "resend"

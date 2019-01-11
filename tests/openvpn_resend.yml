@@ -1,0 +1,22 @@
+---
+### Exapmple usage of openvpn-users ansible role
+
+#   Specify hosts in inventory file and run:
+#   ansible-playbook openvpn_make_user.yml -i inventory
+#   or
+#   ansible-playbook openvpn_make_user.yml -i inventory --aks-pass
+#   if you don't want to set passwords in plain text
+
+- hosts: all
+  become: true
+  become_method: sudo
+
+  vars_prompt:
+
+  - name: "openvpn_user"
+    prompt: "Enter OpenVPN username (format: n.secondname)"
+    default: ""
+    private: no
+
+  roles:
+    - { role: openvpn-clients, openvpn_task: resend, send_to_email: true }

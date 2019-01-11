@@ -1,0 +1,50 @@
+---
+
+  - name: "revoke_user | Remove {{ openvpn_user }} ccd file"
+    file:
+      state: absent
+      path: "{{ openvpn_path }}/ccd/{{ openvpn_user }}"
+
+  - name: "revoke_user | Revoke OpenVPN user certificates"
+    shell: |
+      cd {{ easyrsa_path }}
+      source {{ easyrsa_path }}/vars && ./revoke-full {{ openvpn_user }}
+    args:
+      executable: /bin/bash
+    register: command
+    ignore_errors: true
+    changed_when: "'certificate revoked' in command_result.stderr"
+    failed_when: "'unable to load certificate' in command_result.stderr"
+
+  - name: "revoke_user | Debug of revoke cert result"
+    debug:
+      var: command
+
+  - name: "revoke_user | Remove cert files from OpenVPN server"
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - '{{ easyrsa_path }}/keys/{{ openvpn_user }}.crt'
+      - '{{ easyrsa_path }}/keys/{{ openvpn_user }}.key'
+      - '{{ easyrsa_path }}/keys/{{ openvpn_user }}.csr'
+    when: remove_certs == true
+
+  - name: "revoke_user | Remove cert data in keys/index.txt"
+    lineinfile:
+      dest: "{{ easyrsa_path }}/keys/index.txt"
+      regexp: "{{ user_email }}"
+      state: absent
+    when: remove_certs == true
+
+  - name: "revoke_user | Send notification to admins"
+    mail:
+      host: smtp.gmail.com
+      port: 465
+      username: '{{ email_username }}'
+      password: '{{ email_userpassword }}'
+      to: '{{ admin_email }}'
+      subject: VPN keys for {{ openvpn_user }} has been revoked
+      body: "{{ lookup('file', 'revoke.txt') }}"
+    delegate_to: localhost
+    become: false

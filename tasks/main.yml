@@ -1,0 +1,23 @@
+---
+
+  - set_fact: user_email="{{ openvpn_user }}@{{ email_domain }}"
+    when: openvpn_task == "create" or
+          openvpn_task == "revoke" or
+          openvpn_task == "resend"
+
+  - name: "Make OpenVPN User"
+    include: make_user.yml
+    when: ( openvpn_task is defined and openvpn_task == "create" ) or
+          ( openvpn_task is defined and openvpn_task == "resend" )
+
+  - name: "Make OpenVPN mobile settings"
+    include: make_mobile.yml
+    when: openvpn_task is defined and openvpn_task == "makemobile"
+
+  - name: "Revoke OpenVPN User"
+    include: revoke_user.yml
+    when: openvpn_task is defined and openvpn_task == "revoke"
+
+  - name: "Show OpenVPN Users"
+    include: show_stat.yml
+    when: openvpn_task is not defined or openvpn_task == "show"

@@ -1,0 +1,19 @@
+[vpn-server]
+
+## specify openvpn server(s) IP (or FQDN)
+## e.g.
+## 10.10.1.1
+## 10.10.1.2
+## hostname.domain
+10.10.12.6
+
+[vpn-server:vars]
+ansible_connection=ssh
+ansible_become_user=root
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+## Specify username, userpassword, rootpassword
+## of all virtual machines here
+ansible_ssh_user=<<username>>
+ansible_ssh_pass=<<password>>
+ansible_become_pass=<<password>>

@@ -1,0 +1,16 @@
+---
+
+  - name: "show_stats | Get index.txt keys data"
+    shell: |
+      cat {{ easyrsa_path }}/keys/index.txt
+    args:
+      executable: /bin/bash
+    register: command
+
+  - name: "show_stats | Format text of stats result"
+    set_fact:
+      result_out: '{{ command.stdout_lines | replace("\t", "|") }}'
+
+  - name: "show_stats | Output stats Result"
+    debug:
+      var: result_out

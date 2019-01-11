@@ -1,0 +1,35 @@
+---
+
+   ### Change the options according to the settings.
+   #
+   # Now its:
+   #
+   # connection-type tls
+   # remote IP PORT
+   # comp-lzo
+   # dev tun
+   # remote-cert-tls server
+
+  - name: "make_mobile | Creating .ovpn file"
+    shell: |
+      cd {{ easyrsa_path }}
+      echo "connection-type tls" > {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo "remote {{ openvpn_public_ip }} {{ openvpn_port }} udp" >> \
+           {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo -e "comp-lzo\ndev tun\nremote-cert-tls server" >> \
+           {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo -e "\n<ca>" >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      cat {{ easyrsa_path }}/keys/ca.crt >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo -e "</ca>" >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo -e "\n<key>" >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      cat {{ easyrsa_path }}/keys/{{ openvpn_user }}.key >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo -e "</key>" >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo -e "\n<cert>" >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      cat {{ easyrsa_path }}/keys/{{ openvpn_user }}.crt | \
+           sed -e/BEGIN/\{ -e:1 -en\;b1 -e\} -ed >> \
+           {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+      echo -e "</cert>" >> {{ easyrsa_path }}/keys/{{ openvpn_user }}.ovpn
+    args:
+      executable: /bin/bash
+    register: command
+
